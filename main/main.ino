@@ -6,20 +6,13 @@
 #include <Wire.h>
 #include <Adafruit_INA219.h>
 #include <PID_v1.h>
-
-
 #include "localDefines.h"
-
-Adafruit_INA219 ina219;
 
 int pwmPin = 3;       // pino do PWM
 
-float busvoltage = 0; /*definição tensão no bus */
-float current_mA = 0; /*definição corrente */
-
 //int analogPin_Tensao = A5;    // leitura de tensao/
 //int analogPin_Corrente = A3;  // leitura de corrente
-LM35 temp(A5);  // leitura de temperatura
+LM35 temp(A5);  // leitura de temperatura, pino A5
 
 // configurar variaveis globais
 int configuracao = MANUAL;    // configuracao padrao: MANUAL
@@ -27,6 +20,9 @@ int confManual = CONTINUO;   // configuracao manual padrao: sinal CONTINUO
 
 int delayPulseOn = DEFAULT_DELAY;  // tempo em que o sinal pulsativo fica ligado (milisegundos)
 int delayPulseOff = DEFAULT_DELAY; // tempo em que o sinal pulsativo fica desligado (milisegundos)
+
+float busvoltage = 0; /*definição tensão no bus */
+float current_mA = 0; /*definição corrente */
 
 double pwmVal = 0;        // valor do PWM: 0-255
 char msg;     // variavel que guarda o byte digitado na entrada serial
@@ -36,6 +32,8 @@ double Setpoint, Input;
 double Kp=100, Ki=0.2, Kd=1;
 
 PID myPID(&Input, &pwmVal, &Setpoint, Kp, Ki, Kd, DIRECT);
+
+Adafruit_INA219 ina219;
 
 /**
    Setup
