@@ -2,9 +2,6 @@
     Codigo principal
 */
 
-#include <LM35.h>
-#include <Wire.h>
-#include <Adafruit_INA219.h>
 #include <PID_v1.h>
 #include <stdio.h>
 
@@ -12,33 +9,32 @@
 
 int pwmPin = 3;       // pino do PWM
 
-//int analogPin_Tensao = A5;    // leitura de tensao/
-//int analogPin_Corrente = A3;  // leitura de corrente
-LM35 temp(A5);  // leitura de temperatura, pino A5
+int analogPin_Tensao = A0;    // leitura de tensao
+int analogPin_Corrente = A3;  // leitura de corrente
+int analogPin_Temperatra = A5;// leitura de temperatura
 
 // configurar variaveis globais
-int configuracao = MANUAL;    // configuracao padrao: MANUAL
+int configuracao = MANUAL;   // configuracao padrao: MANUAL
 int confManual = CONTINUO;   // configuracao manual padrao: sinal CONTINUO
 
 int delayPulseOn = DEFAULT_DELAY;  // tempo em que o sinal pulsativo fica ligado (milisegundos)
 int delayPulseOff = DEFAULT_DELAY; // tempo em que o sinal pulsativo fica desligado (milisegundos)
 
-float busvoltage = 0; /*definição tensão no bus */
-float current_mA = 0; /*definição corrente */
+int tensao_V = 0; /*definição tensão no bus 0-1023 (int) */
+double current_mA = 0; /*definição corrente */
+int temperatura_C = 0; /*definição temperatura */
 
 double pwmVal = 0;        // valor do PWM: 0-255
-char msg;     // variavel que guarda o byte digitado na entrada serial
 
 // Controle
 double Setpoint, Input;
-double Kp=100, Ki=0.2, Kd=1;
+double Kp = DEFAULT_KP, Ki = DEFAULT_KI, Kd = DEFAULT_KD;
 
 // UART
-char mensagem[30];
+char configMsg[25]; // comando na entrada serial
+int cont = 0;       // contador de bytes
 
-PID myPID(&Input, &pwmVal, &Setpoint, Kp, Ki, Kd, DIRECT);
-
-Adafruit_INA219 ina219;
+PID myPID(&current_mA, &pwmVal, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 /**
    Setup
@@ -47,9 +43,9 @@ void setup()
 {
   // PWM
   pinMode(pwmPin, OUTPUT);
-
-  // Serial
-  //  Serial.begin(9600);
+  pinMode(tensao_V, INPUT);
+  pinMode(current_mA, INPUT);
+  pinMode(temperatura_C, INPUT);
 
   Serial.begin(115200); /*inicia serial com baudrate de 115200 */
   while (!Serial)
@@ -57,19 +53,10 @@ void setup()
     delay(1);
   }
 
-  //if (! ina219.begin())
-  //{
-    Serial.println("Falha ao encontrar o INA219");
-//    while (1) {
-//      delay(10);
-//    }
-  //}
-
   // Timer, para mostrar dados no monitor
   initTimer1();
 
-  Input = current_mA;
-  Setpoint = 10;        // usuario seta
+  Setpoint = DEFAULT_SETPOINT;        // usuario seta
 
   //turn the PID on
   myPID.SetMode(AUTOMATIC);
@@ -85,8 +72,10 @@ void loop()
     readSerialInput(Serial.read());    // le o caractere (ou mensagem) e muda as configuracoes
   }
 
-  busvoltage = ina219.getBusVoltage_V(); /* comando para chamar a tensão em bus */
-  current_mA = ina219.getCurrent_mA(); /* comando para chamar a corrente */
+  // leitura de tensao, corrente e temperatura
+  tensao_V = analogRead(analogPin_Tensao);
+  current_mA = analogRead(analogPin_Corrente);
+  temperatura_C = analogRead(analogPin_Temperatra);
 
   switch (configuracao) {
     case MANUAL:
