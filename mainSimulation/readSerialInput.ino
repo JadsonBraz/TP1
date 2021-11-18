@@ -6,7 +6,7 @@
     'm' - configuração manual
       'c' - configuração continua
       'p' - configuração pulsativa
-    
+
   Comandos com mais de 1 byte:
     '/pwm***_e' - configura pwm (0-254) na configuração manual continua
     '/pwm***_ton***_toff***_e' - configura pwm, tempo ligado e tempo desligado na configuração pulsativa
@@ -17,8 +17,6 @@
 
 void readSerialInput (char msgByte)
 {
-  //  '/' inicia a menagem e 'e' termina
-
   if (msgByte == 'm') {
     configuracao = MANUAL;
   } else if (msgByte == 'a') {
@@ -30,6 +28,7 @@ void readSerialInput (char msgByte)
   }
 
   // read many bytes
+  //  '/' inicia a menagem e 'e' termina
   if (msgByte == '/' && configuracao == MANUAL) {
     while (msgByte != 'e') {
       msgByte = Serial.read();
@@ -42,7 +41,6 @@ void readSerialInput (char msgByte)
     // /pwm***_e
     pwmVal = ((configMsg[3] - '0') * 100 + (configMsg[4] - '0') * 10 + (configMsg[5] - '0')) * FRAC_PWM;
     if (pwmVal >= MAX_PWM) pwmVal = MAX_PWM;
-    if (pwmVal <= MIN_PWM) pwmVal = MIN_PWM;
 
     // /pwm***_ton***_toff***_e
     if (confManual == PULSATIVO) {
@@ -64,11 +62,11 @@ void readSerialInput (char msgByte)
     Kp = ((configMsg[1] - '0') * 100 + (configMsg[2] - '0') * 10 + (configMsg[3] - '0')) / 10.0;
     Ki = ((configMsg[6] - '0') * 100 + (configMsg[7] - '0') * 10 + (configMsg[8] - '0')) / 10.0;
     Kd = ((configMsg[11] - '0') * 100 + (configMsg[12] - '0') * 10 + (configMsg[13] - '0')) / 10.0;
-    
+
     Setpoint = ((configMsg[16] - '0') * 1000 + (configMsg[17] - '0') * 100 + (configMsg[18] - '0') * 10 + (configMsg[19] - '0'));
-    
-    if(Setpoint > 1023) Setpoint = 1023;
-    
+
+    if (Setpoint > 1023) Setpoint = 1023;
+
     // setar variaveis de controle:
     myPID.SetTunings(Kp, Ki, Kd);
   }
