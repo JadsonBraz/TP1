@@ -3,11 +3,17 @@
 */
 void controleAutomatico(void)
 {
+  Input = (double) current_mA;
+
   myPID.Compute();
 
   if (pwmVal > MAX_PWM) {
     pwmVal = MAX_PWM;
   }
 
-  analogWrite(pwmPin, pwmVal);
+  // escrever valor na saida
+  analogWrite(pwmPin, (int) pwmVal);
+
+  // escrever valor no holding register
+  rg_holding[3] = pwmVal;
 }
