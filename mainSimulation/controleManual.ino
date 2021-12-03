@@ -1,25 +1,30 @@
 /**
    Controle manual: continuo ou pulsativo
 */
-void controleManual(void)
+void controleManualContinuo(void)
 {
-  switch (confManual) {
-    // sinal continuo
-    case CONTINUO:
-      analogWrite(pwmPin, pwmVal);
+  analogWrite(pwmPin, pwmVal);
+}
 
-      break;
+/**
+   Rotina do TIMER1 utilizada para configuracao manual pulsativa
+*/
+ISR(TIMER1_OVF_vect)
+{
+  TCNT1 = 0xC2F7;   // reinicia o timer
 
-    // sinal pulsativo
-    case PULSATIVO:
+  if (configuracao == PULSATIVO) {
+    contOn++;
+    if (contOn >= delayPulseOn) {
       analogWrite(pwmPin, MIN_PWM);
-      delay(delayPulseOff * SEGUNDO);
+      contOff++;
+      if (contOff > delayPulseOff) {
+        analogWrite(pwmPin, pwmVal);
+        contOff = 0;
+        contOn = 0;
+      }
+    } else {
       analogWrite(pwmPin, pwmVal);
-      delay(delayPulseOn * SEGUNDO);
-
-      break;
-
-    default:
-      break;
+    }
   }
 }
