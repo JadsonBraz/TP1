@@ -8,7 +8,7 @@ void setupInitialValuesOfModbusRegisters (void)
   modbus_update_holding(0, 0);    // tensao
   modbus_update_holding(1, 0);    // corrente
   modbus_update_holding(2, 0);    // temperatura
-  modbus_update_holding(3, 120);    // PWM
+  modbus_update_holding(3, 0);    // PWM
   modbus_update_holding(4, (uint16_t)  DEFAULT_DELAY);    // T_ON
   modbus_update_holding(5, (uint16_t)  DEFAULT_DELAY);    // T_OFF
   modbus_update_holding(6, (uint16_t)  DEFAULT_KP);       // Kp
